@@ -1,9 +1,7 @@
 #ifndef MANAGERBASE_H_
 #define MANAGERBASE_H_
-// #include "core/interface/IRuntime.h"
-#include "../interface/IRuntime.h"
 
-class ManagerBase: public IRuntime{
+class ManagerBase{
 public:
     virtual ~ManagerBase(){};
     virtual void init()=0;
