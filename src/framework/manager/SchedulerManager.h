@@ -1,10 +1,3 @@
-/*
- * @Author: wimidev
- * @Date: 2020-12-02 10:18:28
- * @LastEditors: wimidev
- * @LastEditTime: 2020-12-02 10:51:19
- * @Description: 定时服务管理器
- */
 #ifndef SCHEDULERMANAGER_H
 #define SCHEDULERMANAGER_H
 #include <functional>
@@ -12,7 +5,8 @@
 #include "ManagerBase.h"
 
 #define TIMER_LIMIT 50
-
+// typedef void (*TimerCallback)();
+// #define TimerCallback std::function<void (void)>
 typedef std::function<void (void)> TimerCallback;
 
 enum TIMER_STATUS{
@@ -45,13 +39,13 @@ public:
     static SchedulerManager* getInstance();
 
     void setTick(unsigned long _tick);
+    // unsigned int schedule(TimerCallback callback, unsigned int inval, bool trigeNow=false, bool isOnce=false);
     unsigned int schedule(const TimerCallback& callback, void* target, unsigned int inval, bool trigeNow=false, bool isOnce=false);
     unsigned int scheduleOnce(const TimerCallback& callback, void* target, unsigned int inval);
     void unschdule(unsigned int timerId);
     void unschdule(void* target);
-    
 private:
-
+    //Timer timerPool[TIMER_LIMIT];
     std::vector<Timer*> timerPool;
     static SchedulerManager* _instance;
     unsigned long tick;

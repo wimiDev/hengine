@@ -1,10 +1,3 @@
-/*
- * @Author: wimidev
- * @Date: 2020-12-02 10:18:28
- * @LastEditors: wimidev
- * @LastEditTime: 2020-12-02 11:45:15
- * @Description: 定时服务管理器
- */
 #include "SchedulerManager.h"
 #include <Arduino.h>
 
@@ -48,14 +41,17 @@ void SchedulerManager::setTick(unsigned long _tick){
 }
 
 void SchedulerManager::update(){
-    for(int idx = 0; !timerPool.empty() && idx < timerPool.size(); idx++){
+    for(int idx = timerPool.size()-1; !timerPool.empty() && idx >= 0; idx--){
         TIMERCACHE* cache = &timerPool[idx]->cache;
         if(tick > 0 && cache->status == TIMER_STATUS::READY && 
         tick - timerPool[idx]->lastTrigget > timerPool[idx]->inval || 
         timerPool[idx]->inval == 0){
             TimerCallback callback = timerPool[idx]->callback;
             if(cache->isOnce){
-                unschdule(idx);
+                // unschdule(idx);
+                timerPool.erase(timerPool.begin() + idx);
+                unsigned int timerId = reinterpret_cast<unsigned int>(timerPool[idx]);
+                Serial.printf("unschdule once su!, timerId = %d, size = %d\n", timerId, timerPool.size());
             }
             timerPool[idx]->lastTrigget = tick;
             if(callback != nullptr) callback();
@@ -63,13 +59,33 @@ void SchedulerManager::update(){
     }
 }
 
+// unsigned int SchedulerManager::schedule(TimerCallback callback, unsigned int inval, bool trigeNow, bool isOnce){
+//     Timer* timer = createTimer(callback, this, inval);
+//     //是否只触发一次
+//     if (isOnce) {
+//         timer->cache.isOnce = 1;
+//     }
+//     else
+//     {
+//         timer->cache.isOnce = 0;
+//     }
+//     timer->cache.status = TIMER_STATUS::READY;
+//     timer->cache.triggerCount = 0;
+//     if (trigeNow == true) {
+//         (timer->callback)();
+//     }
+//     timerPool.push_back(timer);
+//     return timerPool.size()-1;
+// }
+
 unsigned int SchedulerManager::schedule(const TimerCallback& callback, void* target, unsigned int inval, bool trigeNow, bool isOnce){
     Timer* timer = createTimer(callback, target, inval);
     //是否只触发一次
     if (isOnce) {
         timer->cache.isOnce = 1;
     }
-    else{
+    else
+    {
         timer->cache.isOnce = 0;
     }
     timer->cache.status = TIMER_STATUS::READY;
