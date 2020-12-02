@@ -1,3 +1,10 @@
+/*
+ * @Author: wimidev
+ * @Date: 2020-10-19 16:00:05
+ * @LastEditors: wimidev
+ * @LastEditTime: 2020-12-02 10:53:46
+ * @Description: 网络管理器
+ */
 
 #ifndef NETMANAGER_H_
 #define NETMANAGER_H_

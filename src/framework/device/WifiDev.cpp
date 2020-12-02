@@ -1,10 +1,19 @@
+/*
+ * @Author: wimidev
+ * @Date: 2020-10-19 14:52:45
+ * @LastEditors: wimidev
+ * @LastEditTime: 2020-12-02 11:44:00
+ * @Description: WIFI设备
+ */
 #include "WifiDev.h"
 #include <Arduino.h>
+#include "../manager/SchedulerManager.h"
 
 int connectCount = 0;
 WifiDev::WifiDev(){
     status = -1;
     _funcConnect = nullptr;
+    schCheck = 0xffff;
 }
 
 WifiDev::~WifiDev(){
@@ -12,13 +21,13 @@ WifiDev::~WifiDev(){
 }
 
 void WifiDev::connect(){
-    checkConnect();
+    //用定时器来检测网络连接状态
+    schCheck = SchedulerManager::getInstance()->schedule(std::bind(&WifiDev::checkConnect, this), this, 1000, true);
 }
 
 void WifiDev::checkConnect(){
     status = WiFi.status();
-    if(status != WL_CONNECTED)
-    {
+    if(status != WL_CONNECTED){
         if(connectCount == 0){
             const char* ssid = "Input-your-ssid";
             const char* pass = "Input-your-pwd";
@@ -27,7 +36,6 @@ void WifiDev::checkConnect(){
             WiFi.mode(WIFI_STA);
             WiFi.begin(ssid, pass);
             Serial.println("WiFi.begin run.");
-
             Serial.print("Connecting\n");
         }
         connectCount++;
@@ -37,12 +45,15 @@ void WifiDev::checkConnect(){
              connectCount = 0; 
              Serial.printf("wifi connect timeout.");  
         }
-        delay(1000); //临时用这个来做个延迟，后面换成别的
-        checkConnect();
+        //现在有定时服务了就不需要在这里递归的去调用自己了
+        // delay(1000); //临时用这个来做个延迟，后面换成别的
+        // checkConnect();
     }else{
         Serial.print("Connected, IP address: ");
         Serial.println(WiFi.localIP());
         if(_funcConnect != nullptr) _funcConnect();
+        //连上网之后注销定时器
+        SchedulerManager::getInstance()->unschdule(schCheck);
     }
 }
 
